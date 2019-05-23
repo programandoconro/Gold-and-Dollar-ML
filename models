@@ -1,4 +1,4 @@
-    library(downloader)
+  library(downloader)
   library(ggplot2)
   library(MASS)
   library(zoo)
@@ -157,8 +157,19 @@ df_g<-data.frame(out_gld,exp_gld)
 xd<-na.aggregate(df_d[-1000,])
 xg<-na.aggregate(df_g[-1000,])
 
+xd<-lapply(xd, normalize)
+xg<- lapply(xg, normalize)
+
+xd <- as.data.frame(xd)
+xg <- as.data.frame(xg)
+
+
+
 model_d <- stepAIC(glm(xd$out_dlr~.,data = xd[,-1],family = binomial(link = "logit")))
 
 model_g <- stepAIC(glm(xg$out_gld~.,data = xg[,-1],family = binomial(link = "logit")))
+
+
+
 
 
