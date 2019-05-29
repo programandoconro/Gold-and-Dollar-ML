@@ -4,6 +4,7 @@ library(zoo)
 library(caret)
 library(randomForest)
 library(e1071)
+library(ggplot2)
 
 
 normalize <- function(x) { 
@@ -106,7 +107,7 @@ negcv=neg[-eneg,]
 traing=rbind(post,negt); cvg=rbind(poscv,negcv)
 
 rfgo1<-  randomForest(as.factor( traing$out_gld)~.,
-                     data = traing[, -1])
+                     data = traing[, -1],ntree=1000)
 
 pgrf1<-  predict(rfgo1,cvg[,-1])
 
@@ -151,6 +152,8 @@ h5("Por favor espere 10 segundos mientras se computa el resultado"),
                                  font-style: bold;
                                  }"
           )),
+        
+          plotOutput("plot"),
           
         
           h5("*Esta app está en desarrollo activo. Si quieres apoyar el proyecto, información en programandoconro.wordpress.com"),
@@ -168,18 +171,28 @@ server <- function(input, output) {
 
 
     output$text <- renderText({
-      rfgo<-  randomForest(as.factor( traing$out_gld)~.,ntree=500,
+      rfgo<-  randomForest(as.factor( traing$out_gld)~.,ntree=1000,
                            data = traing[, -1])
       
       pgrf<-  predict(rfgo,xghoy[NROW(xghoy),-1])
       
       
-  ifelse( as.numeric(pgrf)-1 <1, paste("El algoritmo Random Forest predice que el precio del oro mañana ",TomorrowDate(Sys.Date()),"BAJARÁ"), paste("El algoritmo RandomForest predice que el precio del oro mañana ",TomorrowDate(Sys.Date()),"AUMENTARÁ"))
+      ifelse( pgrf ==0, paste("El algoritmo Random Forest predice que el precio del oro mañana ",TomorrowDate(Sys.Date()),"BAJARÁ"), paste("El algoritmo RandomForest predice que el precio del oro mañana ",TomorrowDate(Sys.Date()),"AUMENTARÁ"))
   
      
     })
     
-   
+    output$plot <- renderPlot({
+      
+      g<- ggplot(data = t[2258:nrow(t),],aes(x=2258:nrow(t),y=t$value[2258:nrow(t)]))
+      g+geom_point()+geom_line()+xlab ("Días recientes")+ylab ("Valor (USD)")
+      
+ 
+    })
+    
+    
+
+    
     
 }
 
